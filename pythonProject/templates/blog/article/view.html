@@ -2,9 +2,8 @@
 <p>{{ article.text }}</p>
 <p>
     {% for tag in article.tags.all %}
-        <a href="#">#{{ tag.name }}</a>
+        <a href="{% url 'tags_to_articles_view' tag_id=tag.id %}">#{{ tag.name }}</a>
     {% endfor %}
-    
 </p>
 <hr>
 <p>

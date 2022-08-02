@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from apps.blog.models import BlogCategory, Article
+from apps.blog.models import BlogCategory, Article, Tag
 
 
 def blog_categery_list(request):
@@ -11,7 +11,13 @@ def article_list(request, category_id):
     articles = Article.objects.filter(category=category_id)
     return render(request, 'blog/article/list.html', {'articles': articles})
 
+
 def article_view(request, category_id, article_id):
     article = Article.objects.get(id=article_id)
     category = BlogCategory.objects.get(id=category_id)
     return render(request, 'blog/article/view.html', {'article': article, 'category': category})
+
+
+def tags_to_articles_view(request, tag_id):
+    articles = Article.objects.filter(tags=tag_id)
+    return render(request, 'blog/article/tag_list.html', {'articles': articles})

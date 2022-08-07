@@ -1,6 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
     <h1>{{ article.title }}</h1>
+    {% if article.image %}
+        <img class="img-thumbnail" src="{{ article.image.url }}" alt="">
+    {% else %}
+        <img class="img-thumbnail" src="{% static 'no-image.png' %}" alt="">
+    {% endif %}
     <p>{{ article.text }}</p>
     <p>
         {% for tag in article.tags.all %}

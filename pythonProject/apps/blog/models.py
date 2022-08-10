@@ -1,6 +1,8 @@
 from django.db import models
+from django.utils.safestring import mark_safe
 from imagekit.models import ProcessedImageField, ImageSpecField
 from pilkit.processors import ResizeToFill
+from config.settings import MEDIA_ROOT
 
 
 class BlogCategory(models.Model):
@@ -15,6 +17,19 @@ class BlogCategory(models.Model):
         null=True
     )
 
+    def image_tag_thumbnail(self):
+        if self.image:
+            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image}" width="70">')
+
+    image_tag_thumbnail.short_description = 'Текущее изображение'
+    image_tag_thumbnail.allow_tags = True
+
+    def image_tag(self):
+        if self.image:
+            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image}">')
+
+    image_tag.short_description = 'Текущее изображение'
+    image_tag.allow_tags = True
 
     def __str__(self):
         return self.name
@@ -22,6 +37,17 @@ class BlogCategory(models.Model):
     class Meta:
         verbose_name = 'Категории блога'
         verbose_name_plural = 'Категории блога'
+
+
+class Tag(models.Model):
+    name = models.CharField(verbose_name='Тэги', max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name='Тэги'
+        verbose_name_plural='Тэг'
 
 
 class Article(models.Model):
@@ -35,7 +61,8 @@ class Article(models.Model):
     text = models.TextField(verbose_name='Текст')
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='Дата редоктиравания', auto_now=True)
-    tags = models.ManyToManyField('Tag', verbose_name='Тэги', blank=True)
+    tags = models.ManyToManyField(to=Tag, verbose_name='Тэги', blank=True)
+
     image = ProcessedImageField(
         verbose_name='Изображение',
         upload_to='blog/article/',
@@ -51,6 +78,24 @@ class Article(models.Model):
         options={'qualiti': 100}
     )
 
+    def image_tag_thumbnail(self):
+        if self.image:
+            if not self.image_thumbnail:
+                Article.objects.get(id=self.id)
+            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image_thumbnail}" width="70">')
+
+    image_tag_thumbnail.short_description = 'Текущее изображение'
+    image_tag_thumbnail.allow_tags = True
+
+    def image_tag(self):
+        if self.image:
+            if not self.image_thumbnail:
+                Article.objects.get(id=self.id)
+            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image_thumbnail}">')
+
+    image_tag.short_description = 'Текущее изображение'
+    image_tag.allow_tags = True
+
     def __str__(self):
         return self.title
 
@@ -59,12 +104,3 @@ class Article(models.Model):
         verbose_name_plural='Статьи'
 
 
-class Tag(models.Model):
-    name = models.CharField(verbose_name='Тэги', max_length=255)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name='Тэги'
-        verbose_name_plural='Тэг'

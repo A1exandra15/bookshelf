@@ -4,8 +4,8 @@
     <h1>{{ article.title }}</h1>
     {% if article.image %}
         <img class="img-thumbnail" src="{{ article.image.url }}" alt="">
-{#    {% else %}#}
-{#        <img class="img-thumbnail" src="{% static 'no-image.png' %}" alt="">#}
+        {#    {% else %}#}
+        {#        <img class="img-thumbnail" src="{% static 'no-image.png' %}" alt="">#}
     {% endif %}
     <p>{{ article.text }}</p>
     <p>
@@ -18,4 +18,14 @@
         <b>Дата</b>: {{ article.created_at }}<br>
         <b>Категория</b>: {{ category.name }}<br>
     </p>
+    {% if article.user %}
+        <div class="text-end">
+            {% if article.user.image %}
+                <div class="pic">
+                    <img class="img-av" src="{{ article.user.image_thumbnail.url }}" alt="">
+                </div>
+            {% endif %}
+            <b class="name">{{ article.user.first_name }} {{ article.user.last_name }}</b>
+        </div>
+    {% endif %}
 {% endblock %}

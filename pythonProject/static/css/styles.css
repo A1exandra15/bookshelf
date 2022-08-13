@@ -59,3 +59,13 @@
     top: 3px;
     color: darkred;
 }
+
+.pic{
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.img-av{
+    height: 60px;
+    border-radius: 100%;
+}

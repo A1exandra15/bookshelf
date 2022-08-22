@@ -125,7 +125,13 @@ class Product(models.Model):
         return Image.objects.filter(product=self.id)
 
     def main_image(self):
-        return Image.objects.filter(product=self.id, is_main=True).first()
+        image = Image.objects.filter(product=self.id, is_main=True).first()
+        if image:
+            return image
+        return self.images().first()
+
+    def get_absolute_url(self):
+        return reverse('product', kwargs={'pk': self.id})
 
 
 class ProductCategory(models.Model):

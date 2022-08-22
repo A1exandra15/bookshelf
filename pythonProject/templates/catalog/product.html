@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+    <div class="product-view">
+        <h3>{{ product.name }}</h3>
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <div class="row">
+                    {#                    <div class="col-6">#}
+                    {#                        <a href="{{ product.main_image.image.url }}" class="product-image" data-lightbox="roadtrip">#}
+                    {#                            <img src="{{ product.main_image.image_thumbnail.url }}" alt=""#}
+                    {#                                 class="img-thumbnail">#}
+                    {#                        </a>#}
+                    {#                    </div>#}
+                    {% for image in product.images %}
+                        <div class="col-6">
+                            <a href="{{ product.main_image.image.url }}" class="product-image" data-lightbox="roadtrip">
+                                {% if product.main_image.image_thumbnail %}
+                                    <img src="{{ product.main_image.image_thumbnail.url }}" alt=""
+                                         class="img-thumbnail">
+                                {% else %}
+                                    <img src="{% static 'no-image.png' %}" alt="" class="img-thumbnail">
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-md-6">
+                <p>Наличие: <b class="text-success">{{ product.quantity }}</b></p>
+                <b class="text-danger product-price">{{ product.price }}</b>
+                <form action="">
+                    <div class="input-group mb-3">
+                        <input type="number" min="1" step="1" max="100" value="1" class="form-control">
+                        <button class="btn btn-success" type="button" id="button-addon1">Купить</button>
+                    </div>
+                </form>
+                <br>
+                <h4 class="text-center">Описание</h4>
+                <p>{{ product.description }}</p>
+            </div>
+
+        </div>
+        <script>
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true
+            })
+        </script>
+    </div>
+{% endblock %}

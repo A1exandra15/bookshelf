@@ -48,7 +48,7 @@ class Tag(models.Model):
 
     class Meta:
         verbose_name='Тэги'
-        verbose_name_plural='Тэг'
+        verbose_name_plural='Тэги'
 
 
 class Article(models.Model):

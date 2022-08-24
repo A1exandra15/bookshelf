@@ -1,7 +1,4 @@
 {% extends "base.html" %}
-{% block meta_tags %}
-    {% include '_meta_tags.html' with meta_title=object.get_meta_title meta_description=object.meta_description meta_keywords=object.meta_keywords%}
-{% endblock %}
 {% load static %}
 {% block content %}
     <div class="product-view">
@@ -9,11 +6,17 @@
         <div class="row">
             <div class="col-xs-12 col-md-6">
                 <div class="row">
+                    {#                    <div class="col-6">#}
+                    {#                        <a href="{{ product.main_image.image.url }}" class="product-image" data-lightbox="roadtrip">#}
+                    {#                            <img src="{{ product.main_image.image_thumbnail.url }}" alt=""#}
+                    {#                                 class="img-thumbnail">#}
+                    {#                        </a>#}
+                    {#                    </div>#}
                     {% for image in product.images %}
                         <div class="col-6">
-                            <a href="{{ image.image.url }}" class="product-image" data-lightbox="roadtrip">
+                            <a href="{{ product.main_image.image.url }}" class="product-image" data-lightbox="roadtrip">
                                 {% if product.main_image.image_thumbnail %}
-                                    <img src="{{ image.image_thumbnail.url }}" alt=""
+                                    <img src="{{ product.main_image.image_thumbnail.url }}" alt=""
                                          class="img-thumbnail">
                                 {% else %}
                                     <img src="{% static 'no-image.png' %}" alt="" class="img-thumbnail">

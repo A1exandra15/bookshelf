@@ -1,13 +1,16 @@
+from django.contrib.admin import display
 from django.db import models
 from django.utils.safestring import mark_safe
 from imagekit.models import ProcessedImageField, ImageSpecField
 from mptt.models import MPTTModel, TreeForeignKey
 from pilkit.processors import ResizeToFill
 from django.urls import reverse
+
+from apps.main.mixins import MetaTagMixin
 from config.settings import MEDIA_ROOT
 
 
-class Category(MPTTModel):
+class Category(MPTTModel, MetaTagMixin):
     name = models.CharField(verbose_name='Название', max_length=255)
     slug = models.SlugField(unique=True)
     description = models.TextField(verbose_name='Описание', blank=True, null=True)
@@ -64,41 +67,37 @@ class Image(models.Model):
         upload_to='catalog/product',
         processors=[],
         format='JPEG',
-        options={'qualiti': 100},
+        options={'quality': 100},
         null=True
     )
     image_thumbnail = ImageSpecField(
         source='image',
         processors=[ResizeToFill(600, 400)],
         format='JPEG',
-        options={'qualiti': 100}
+        options={'quality': 100}
     )
     product = models.ForeignKey(to='Product', verbose_name='Товар', on_delete=models.CASCADE)
     is_main = models.BooleanField(verbose_name='Основное изображение', default=False)
 
+    @display(description='Текущее изображение')
     def image_tag_thumbnail(self):
         if self.image:
             if not self.image_thumbnail:
                 Image.objects.get(id=self.id)
-            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image_thumbnail}" width="70">')
+            return mark_safe(f"<img src='/{MEDIA_ROOT}{self.image_thumbnail}' width='70'>")
 
-    image_tag_thumbnail.short_description = 'Текущее изображение'
-    image_tag_thumbnail.allow_tags = True
-
+    @display(description='Текущее изображение')
     def image_tag(self):
         if self.image:
             if not self.image_thumbnail:
                 Image.objects.get(id=self.id)
-            return mark_safe(f'<img src="/{MEDIA_ROOT}{self.image_thumbnail}">')
-
-    image_tag.short_description = 'Текущее изображение'
-    image_tag.allow_tags = True
+            return mark_safe(f"<img src='/{MEDIA_ROOT}{self.image_thumbnail}'>")
 
     def __str__(self):
         return ''
 
 
-class Product(models.Model):
+class Product(MetaTagMixin):
     name = models.CharField(verbose_name='Название', max_length=255)
     description = models.TextField(verbose_name='Описание', blank=True, null=True)
     quantity = models.PositiveIntegerField(verbose_name='Количество', default=1)
@@ -113,6 +112,21 @@ class Product(models.Model):
         blank=True
     )
 
+    def images(self):
+        return Image.objects.filter(product=self.id)
+
+    def main_image(self):
+        image = Image.objects.filter(is_main=True, product=self.id).first()
+        if image:
+            return image
+        return self.images().first()
+
+    def main_category(self):
+        category = self.categories.filter(categories__productcategory__is_main=True).first()
+        if category:
+            return category
+        return self.categories.first()
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Товар'
@@ -120,15 +134,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-
-    def images(self):
-        return Image.objects.filter(product=self.id)
-
-    def main_image(self):
-        image = Image.objects.filter(product=self.id, is_main=True).first()
-        if image:
-            return image
-        return self.images().first()
 
     def get_absolute_url(self):
         return reverse('product', kwargs={'pk': self.id})

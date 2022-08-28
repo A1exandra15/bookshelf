@@ -1,7 +1,10 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
+{% block meta_tags %}
+    {% include '_meta_tags.html' with meta_title='Блог' %}
+{% endblock %}
 {% block content %}
-    <h1>Categories</h1>
+    <h1>Категории</h1>
     <div class="row">
         {% for category in categeries %}
             <div class="col-4 blog-item">

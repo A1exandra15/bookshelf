@@ -53,7 +53,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Тэги'
 
 
-class Article(MetaTagMixin):
+class Article(models.Model):
     category = models.ForeignKey(
         to=BlogCategory,
         verbose_name='Категория',

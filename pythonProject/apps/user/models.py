@@ -11,6 +11,7 @@ from config.settings import MEDIA_ROOT
 class User(AbstractUser):
     # name = models.CharField(verbose_name='Имя пользователя', max_length=255)
     phone = PhoneNumberField(verbose_name='Телефон', null=True, blank=True)
+    about = models.CharField(verbose_name='О себе', max_length=255, null=True, blank=True)
     image = ProcessedImageField(
         verbose_name='Изображение',
         upload_to='user/',

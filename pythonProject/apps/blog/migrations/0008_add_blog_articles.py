@@ -27,5 +27,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_blog_articles)
+        # migrations.RunPython(add_blog_articles)
     ]

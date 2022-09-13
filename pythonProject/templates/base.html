@@ -21,7 +21,8 @@
             integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
             crossorigin="anonymous"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="{% static 'lightbox/js/lightbox.min.js' %}"></script>
 
 </head>
@@ -42,7 +43,7 @@
                 {% if request.user.is_authenticated %}
                     <p class="text-end">Привет {{ request.user.username }} (<a href="{% url 'logout' %}">Выйти</a>)</p>
                 {% else %}
-                    <p class="text-end"><a href="{% url 'login' %}?next={% if request.GET.next %}{{ request.GET.nex }}{% else %}}{{ request.path }}{% endif %}">Войти</a> или <a href="{% url 'register' %}?next={{ request.path }}">Зарегестрироваться</a></p>
+                    <p class="text-end"><a href="{% url 'login' %}?next={% if request.GET.next %}{{ request.GET.nex }}{% else %}}{{ request.path }}{% endif %}">Войти</a>или <a href="{% url 'register' %}?next={{ request.path }}">Зарегестрироваться</a></p>
                 {% endif %}
             </div>
         </div>
@@ -89,6 +90,19 @@
     {% block content %}
     {% endblock %}
 </div>
-
+<footer id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <br>
+                <br>
+                <hr>
+            </div>
+            <div class="col">
+                <p class="text-center text-info">Все права защищены, правда неизвестно кем)</p>
+            </div>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

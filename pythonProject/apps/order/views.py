@@ -1,7 +1,10 @@
+from django.db import transaction
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+
+from apps.catalog.models import Product
 from apps.order.forms import AddToCartForm, CreateOrderForm
-from apps.order.models import Cart
+from apps.order.models import Cart, OrderProduct
 
 
 def get_cart_data(user):
@@ -10,6 +13,12 @@ def get_cart_data(user):
     for row in cart:
         total += row.product.price * row.quantity
     return {'cart': cart, 'total': total}
+
+
+def check_quantity(quantity, product):
+    if quantity > product.quantity:
+        return product.quantity
+    return quantity
 
 
 @login_required
@@ -24,21 +33,31 @@ def add_to_cart(request):
         if not csrf or csrf != data.get('csrfmiddlewaretoken'):
             row = Cart.objects.filter(product=cd['product'], user=cd['user']).first()
             if row:
-                Cart.objects.filter(id=row.id).update(quantity=row.quantity + cd['quantity'])
+                quantity = row.quantity + cd['quantity']
+                Cart.objects.filter(id=row.id).update(quantity=check_quantity(quantity, cd['product']))
             else:
+                form.quantity = check_quantity(cd['quantity'], cd['product'])
                 form.save()
             request.session['cart_token'] = data.get('csrfmiddlewaretoken')
         return render(
             request,
             'order/added.html',
-            {'product': cd['product'], 'cart': get_cart_data(cd['user']), 'breadcrumbs': {'current': 'Товар добавлен'}}
+            {'product': cd['product'], 'cart': get_cart_data(cd['user'])}
         )
     print(form.errors)
 
 
 @login_required
-def cart_product_list(request):
-    return render(request, 'order/cart_view.html', {'cart': get_cart_data(request.user), 'breadcrumbs': {'current': 'Корзина'}})
+def cart_view(request):
+    breadcrumbs = {'current': 'Корзина'}
+    return render(request, 'order/cart_view.html', {'cart': get_cart_data(request.user), 'breadcrumbs': breadcrumbs})
+
+
+@login_required
+def delete_from_cart(request, row_id):
+    Cart.objects.filter(id=row_id).delete()
+    breadcrumbs = {'current': 'Корзина'}
+    return render(request, 'order/cart_view.html', {'cart': get_cart_data(request.user), 'breadcrumbs': breadcrumbs})
 
 
 @login_required
@@ -56,16 +75,25 @@ def create_order(request):
         request.POST = data
         form = CreateOrderForm(request.POST)
         if form.is_valid():
-            form.save()
-            Cart.objects.filter(user=user).delete()
-            return render(request, 'order/created.html', {'cart': cart, 'breadcrumbs': {'current': 'Заказ оформлен'}})
+            with transaction.atomic():
+                order = form.save()
+                for row in cart['cart']:
+                    OrderProduct.objects.create(
+                        order=order,
+                        product=row.product,
+                        quantity=check_quantity(row.quantity, row.product),
+                        price=row.product.price
+                    )
+                    Product.objects.filter(id=row.product.id)\
+                        .update(quantity=row.product.quantity - check_quantity(row.quantity, row.product))
+                Cart.objects.filter(user=user).delete()
+            return render(request, 'order/created.html')
         error = form.errors
-
     else:
         form = CreateOrderForm(data={
             'first_name': user.first_name if user.first_name else '',
             'last_name': user.last_name if user.last_name else '',
             'email': user.email if user.email else '',
-            'phone': user.phone if user.phone else ''
+            'phone': user.phone if user.phone else '',
         })
-    return render(request, 'order/create.html', {'cart': cart, 'form': form, 'error': error, 'breadcrumbs': {'current': 'Оформление заказа'}})
+    return render(request, 'order/create.html', {'cart': cart, 'form': form, 'error': error})

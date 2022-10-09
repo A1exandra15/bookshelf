@@ -36,4 +36,7 @@
             <b class="name">{{ article.user.first_name }} {{ article.user.last_name }}</b>
         </div>
     {% endif %}
+
+    {% include 'blog/article/_comments.html' %}
+
 {% endblock %}

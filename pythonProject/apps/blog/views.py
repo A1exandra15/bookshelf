@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.urls import reverse
 
-from apps.blog.models import BlogCategory, Article, Tag
+from apps.blog.forms import CommentForm
+from apps.blog.models import BlogCategory, Article, Tag, Comment
 from config.settings import PAGE_NAMES
 
 
@@ -25,7 +26,33 @@ def article_view(request, category_id, article_id):
         reverse('article_list', args=[category.id]): category.name,
         'current': article.title
     }
-    return render(request, 'blog/article/view.html', {'article': article, 'category': category, 'breadcrumbs': breadcrumbs})
+
+    comments = Comment.objects.filter(article=article, is_checked=True)
+
+    error = None
+    if request.method == 'POST':
+        user = request.user
+        data = request.POST.copy()
+        data.update(article=article)
+        if user.is_authenticated:
+            data.update(user=user, name=user.first_name, email=user.email, is_checked=True)
+        request.POST = data
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'blog/article/created_comment.html',
+                          {'breadcrumbs': {'current': 'Комментарий создан'}, 'back': request.path})
+        else:
+            error = form.errors
+    else:
+        form = CommentForm()
+
+    return render(
+        request,
+        'blog/article/view.html',
+        {'article': article, 'category': category, 'breadcrumbs': breadcrumbs,
+         'form': form, 'error': error, 'comments': comments}
+    )
 
 
 def tags_to_articles_view(request, tag_id):
